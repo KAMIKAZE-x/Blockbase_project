@@ -1,70 +1,95 @@
-# Getting Started with Create React App
+# On-Chain Expense Tracker DApp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A decentralized application (DApp) for tracking and splitting expenses among users, built on the Ethereum blockchain. This project allows users to register, add expenses, and settle debts in a transparent and immutable way.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### Core Features
+1. **User Registration**
+   - Register with your Ethereum wallet
+   - Set your display name
+   - View registration status
 
-### `npm start`
+2. **Expense Management**
+   - Add new expenses with multiple participants
+   - Track who paid and who owes
+   - View expense history
+   - See detailed breakdown of each expense
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+3. **Balance Tracking**
+   - View net balances for all users
+   - Track who owes whom
+   - Color-coded display (red for debts, green for credits)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Enhanced Features
 
-### `npm test`
+1. **User Information Display**
+   - View connected wallet address
+   - Check registration status
+   - Get your registered name
+   - See total number of registered users
+   - View last expense label
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. **Currency Conversion**
+   - Toggle between ETH and INR display
+   - Real-time ETH/INR price updates
+   - Automatic price refresh every 5 minutes
+   - Clear display of amounts in both currencies
 
-### `npm run build`
+3. **Smart Contract Features**
+   - Check if a user is registered
+   - Get total number of registered users
+   - Get label of the last expense
+   - Get your own registered name
+   - View detailed expense information
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Technical Details
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Smart Contract
+- Written in Solidity
+- Deployed on Ethereum network
+- Contract Address: `0x1B2bc323feB1e1B0ba347573724c234A1c7ef8b9`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Frontend
+- Built with React.js
+- Uses ethers.js for blockchain interaction
+- Real-time price updates from CoinGecko API
+- Responsive UI with clear data visualization
 
-### `npm run eject`
+## Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **Prerequisites**
+   - MetaMask or similar Ethereum wallet
+   - Node.js and npm installed
+   - Ethereum testnet (Sepolia) configured in wallet
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. **Installation**
+   ```bash
+   npm install
+   npm start
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. **Usage**
+   - Connect your Ethereum wallet
+   - Register with your name
+   - Start adding expenses
+   - View balances and settle debts
+   - Toggle between ETH and INR display
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Development
 
-## Learn More
+### Project Structure
+- `src/BlockBase.sol`: Smart contract code
+- `src/App.js`: Main React application
+- `src/ExpenseTrackerABI.json`: Contract ABI
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Available Scripts
+- `npm start`: Runs the app in development mode
+- `npm test`: Launches the test runner
+- `npm run build`: Builds the app for production
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Contributing
+Feel free to submit issues and enhancement requests!
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## License
+This project is licensed under the MIT License.

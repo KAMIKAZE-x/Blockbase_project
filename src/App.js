@@ -18,7 +18,13 @@ function App() {
   const [expenseLabel, setExpenseLabel] = useState('');  // Description for a new expense
   const [participants, setParticipants] = useState([{ address: '', amountPaid: 0, amountOwed: 0 }]);  // People involved in a new expense
   const [showAddExpense, setShowAddExpense] = useState(false);  // Whether to show the "Add Expense" form
-  const contractAddress = "0xaF1b8De1C88726c10532cc7789D6ae8386837102"; // Paste the address recieved from Remix IDE here
+  const [ownName, setOwnName] = useState('');  // User's own name from blockchain
+  const [totalUsers, setTotalUsers] = useState(0);  // Total number of registered users
+  const [lastExpenseLabel, setLastExpenseLabel] = useState('');  // Label of the last expense
+  const [isUserRegistered, setIsUserRegistered] = useState(false);  // Whether current user is registered
+  const [showInINR, setShowInINR] = useState(false);  // Toggle for INR display
+  const [ethPrice, setEthPrice] = useState(0);  // Current ETH price in INR
+  const contractAddress = "0x1B2bc323feB1e1B0ba347573724c234A1c7ef8b9"; // Paste the address recieved from Remix IDE here
 
   // --- RUNS WHEN THE PAGE FIRST LOADS ---
   // This connects to the user's Ethereum wallet (like MetaMask)
@@ -91,6 +97,7 @@ function App() {
           setName(person.name);  // Save the user's name
           await loadExpenses();  // Load all expenses
           await loadPeople();  // Load all registered people
+          await loadStatistics();  // Load statistics when registered
         }
       } catch (error) {
         console.error("Error checking registration:", error);
@@ -221,6 +228,23 @@ function App() {
     }
   };
 
+  // --- LOAD STATISTICS ---
+  // Loads total users and last expense label
+  const loadStatistics = async () => {
+    if (!contract) return;
+    try {
+      const total = await contract.getTotalRegisteredUsers();
+      const lastLabel = await contract.getLastExpenseLabel();
+      const isRegistered = await contract.isUserRegistered(account);
+      
+      setTotalUsers(total.toNumber());
+      setLastExpenseLabel(lastLabel);
+      setIsUserRegistered(isRegistered);
+    } catch (error) {
+      console.error("Error loading statistics:", error);
+    }
+  };
+
   // --- ADD NEW EXPENSE ---
   // Creates a new expense on the blockchain
   const addExpense = async () => {
@@ -283,12 +307,83 @@ function App() {
     }
   };
 
+  // --- GET OWN NAME ---
+  // Gets the user's registered name from the blockchain
+  const getOwnName = async () => {
+    if (!contract || !isRegistered) return;
+    try {
+      const name = await contract.getOwnName();
+      setOwnName(name);
+      alert(`Your registered name is: ${name}`);
+    } catch (error) {
+      console.error("Error getting own name:", error);
+      alert("Error getting your name. Make sure you are registered.");
+    }
+  };
+
+  // --- FETCH ETH PRICE ---
+  // Gets current ETH price in INR from CoinGecko API
+  const fetchEthPrice = async () => {
+    try {
+      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=inr');
+      const data = await response.json();
+      setEthPrice(data.ethereum.inr);
+    } catch (error) {
+      console.error("Error fetching ETH price:", error);
+    }
+  };
+
+  // Fetch ETH price when component mounts
+  useEffect(() => {
+    fetchEthPrice();
+    // Refresh price every 5 minutes
+    const interval = setInterval(fetchEthPrice, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // --- CONVERT ETH TO INR ---
+  // Converts ETH amount to INR
+  const convertToINR = (ethAmount) => {
+    return (parseFloat(ethAmount) * ethPrice).toFixed(2);
+  };
+
+  // --- FORMAT AMOUNT DISPLAY ---
+  // Formats amount display based on currency toggle
+  const formatAmount = (amount) => {
+    if (showInINR) {
+      return `${amount} ETH (₹${convertToINR(amount)})`;
+    }
+    return `${amount} ETH`;
+  };
+
   // --- THE PAGE LAYOUT (USER INTERFACE) ---
   return (
     <div className="App">
       <header className="App-header">
         <h1>On-Chain Expense Tracker</h1>
         
+        {/* Currency Toggle Button */}
+        <div style={{ marginBottom: '20px' }}>
+          <button 
+            onClick={() => setShowInINR(!showInINR)}
+            style={{ 
+              padding: '8px 16px',
+              backgroundColor: showInINR ? '#4CAF50' : '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {showInINR ? 'Show in ETH' : 'Show in INR'}
+          </button>
+          {showInINR && (
+            <p style={{ margin: '5px 0', fontSize: '0.8em' }}>
+              1 ETH = ₹{ethPrice.toLocaleString()}
+            </p>
+          )}
+        </div>
+
         {/* STEP 1: CONNECT WALLET - Show if not connected */}
         {!isConnected ? (
           <button onClick={() => window.ethereum.request({ method: 'eth_requestAccounts' })}>
@@ -300,6 +395,11 @@ function App() {
         : !isRegistered ? (
           <div>
             <h2>Register</h2>
+            <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#282c34', borderRadius: '5px' }}>
+              <p style={{ margin: '5px 0' }}>Connected Wallet: {account}</p>
+              <p style={{ margin: '5px 0' }}>Total Registered Users: {totalUsers}</p>
+              {lastExpenseLabel && <p style={{ margin: '5px 0' }}>Last Expense: {lastExpenseLabel}</p>}
+            </div>
             <input
               type="text"
               placeholder="Your Name"
@@ -314,7 +414,15 @@ function App() {
         : (
           <div>
             <h2>Welcome, {name}</h2>
-            <p>Account: {account}</p>
+            <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#282c34', borderRadius: '5px' }}>
+              <p style={{ margin: '5px 0' }}>Connected Wallet: {account}</p>
+              <p style={{ margin: '5px 0' }}>Total Registered Users: {totalUsers}</p>
+              {lastExpenseLabel && <p style={{ margin: '5px 0' }}>Last Expense: {lastExpenseLabel}</p>}
+              <button onClick={getOwnName} style={{ marginTop: '10px' }}>
+                Get My Registered Name
+              </button>
+              {ownName && <p style={{ margin: '5px 0' }}>Your registered name: {ownName}</p>}
+            </div>
             <button onClick={() => setShowAddExpense(!showAddExpense)}>
               {showAddExpense ? "Cancel" : "Add Expense"}
             </button>
@@ -373,8 +481,13 @@ function App() {
                   <tr key={idx}>
                     <td style={{ padding: '8px', border: '1px solid #ddd' }}>{person.name}</td>
                     <td style={{ padding: '8px', border: '1px solid #ddd' }}>{person.address.substring(0, 8)}...</td>
-                    <td style={{ padding: '8px', border: '1px solid #ddd', color: parseFloat(person.netBalance) < 0 ? 'red' : 'green' }}>
-                      {parseFloat(person.netBalance).toFixed(5)} ETH
+                    <td style={{ 
+                      padding: '8px', 
+                      border: '1px solid #ddd', 
+                      color: parseFloat(person.netBalance) < 0 ? 'red' : 'green' 
+                    }}>
+                      {formatAmount(Math.abs(parseFloat(person.netBalance)))}
+                      {parseFloat(person.netBalance) < 0 ? ' (owes)' : ' (owed)'}
                     </td>
                   </tr>
                 ))}
@@ -403,8 +516,12 @@ function App() {
                             {/* Show name if found, otherwise show shortened address */}
                             {people.find(person => person.address === p.address)?.name || p.address.substring(0, 8)}...
                           </td>
-                          <td style={{ padding: '5px', border: '1px solid #ddd' }}>{p.amountPaid} ETH</td>
-                          <td style={{ padding: '5px', border: '1px solid #ddd' }}>{p.amountOwed} ETH</td>
+                          <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                            {formatAmount(p.amountPaid)}
+                          </td>
+                          <td style={{ padding: '5px', border: '1px solid #ddd' }}>
+                            {formatAmount(p.amountOwed)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

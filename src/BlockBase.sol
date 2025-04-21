@@ -257,4 +257,41 @@ contract ExpenseTracker {
     function getAllRegisteredPeople() public view returns (address[] memory) {
         return registeredPeople;
     }
+
+    /**
+     * @dev Get the name of the caller
+     * @return name The caller's registered name
+     */
+    function getOwnName() public view returns (string memory) {
+        require(people[msg.sender].walletAddress != address(0), "Not registered");
+        return people[msg.sender].name;
+    }
+
+    /**
+     * @dev Check if a user is registered
+     * @param _addr Address to check
+     * @return bool True if registered, false otherwise
+     */
+    function isUserRegistered(address _addr) public view returns (bool) {
+        return people[_addr].walletAddress != address(0);
+    }
+
+    /**
+     * @dev Get total number of registered users
+     * @return uint256 Total number of registered users
+     */
+    function getTotalRegisteredUsers() public view returns (uint256) {
+        return registeredPeople.length;
+    }
+
+    /**
+     * @dev Get the label of the last expense
+     * @return string Label of the last expense, or empty string if no expenses
+     */
+    function getLastExpenseLabel() public view returns (string memory) {
+        if (expenseCount == 0) {
+            return "";
+        }
+        return expenses[expenseCount - 1].label;
+    }
 }
